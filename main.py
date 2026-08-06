@@ -1,83 +1,50 @@
-import csv
+from flask import Flask, redirect, render_template, request
 
-from bs4 import BeautifulSoup
-from playwright.sync_api import sync_playwright
+from wanted_scraper import WantedScraper
 
-
-class WantedScraper:
-    def __init__(self, search_word):
-        self.search_word = search_word
-        self.search_results = []
-        self.search_url = f"https://www.wanted.co.kr/search?query={search_word}&search_method=direct&tab=position"
-
-    def search(self):
-        playwright = sync_playwright().start()
-        browser = playwright.chromium.launch()
-        context = browser.new_context(
-            locale="ko-KR",
-            user_agent=(
-                "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) "
-                "AppleWebKit/537.36 (KHTML, like Gecko) "
-                "Chrome/131.0.0.0 Safari/537.36"
-            ),
-            viewport={"width": 1280, "height": 800},
-        )
-        page = context.new_page()
-
-        page.goto(self.search_url)
-
-        previous_height = page.evaluate("document.body.scrollHeight")
-        while True:
-            page.keyboard.press("End")
-            try:
-                page.wait_for_function(
-                    "(prev) => document.body.scrollHeight > prev",
-                    arg=previous_height,
-                    timeout=3000,
-                )
-            except Exception:
-                break
-
-            previous_height = page.evaluate("document.body.scrollHeight")
-
-        content = page.content()
-        page.close()
-
-        soup = BeautifulSoup(content, "html.parser")
-        jobs = soup.find_all("div", class_="JobCard_container__zQcZs")
-
-        for job in jobs:
-            a = job.find("a")
-
-            link = f"https://www.wanted.co.kr{a['href']}"
-            company_name = a["data-company-name"]
-
-            spans = [s.get_text(strip=True) for s in a.find_all("span")]
-            experience = next(
-                (s for s in spans if s.startswith(("신입", "경력"))), None
-            )
-            reward = next((s for s in spans if "합격보상금" in s), None)
-
-            self.search_results.append(
-                {
-                    "link": link,
-                    "company_name": company_name,
-                    "experience": experience,
-                    "reward": reward,
-                }
-            )
-
-    def save_jobs(self):
-        file = open(f"{self.search_word}.csv", "w")
-        writer = csv.writer(file)
-        writer.writerow(["title", "company_name", "link"])
-        for job in self.search_results:
-            writer.writerow(job.values())
-        file.close()
+app = Flask("JobScraper")
 
 
-if __name__ == "__main__":
-    input = input("검색어를 입력하세요: ")
-    scraper = WantedScraper(input)
-    scraper.search()
-    scraper.save_jobs()
+@app.route("/")
+def home():
+    return render_template("home.html", name="nico")
+
+
+@app.route("/search")
+def search():
+    keyword = request.args.get("keyword")
+    if keyword is None:
+        return redirect("/")
+
+    wanted_scraper = WantedScraper(keyword)
+    wanted_scraper.search()
+
+    return render_template(
+        "search.html",
+        search_results=wanted_scraper.search_results,
+    )
+
+
+app.run(host="127.0.0.1", port=5001, debug=True)
+
+# from file import save_to_file
+# from remote_scraper import RemoteScraper
+# from wanted_scraper import WantedScraper
+
+# if __name__ == "__main__":
+#     # input = input("검색어를 입력하세요: ")
+
+#     input = ["python", "nextjs", "react"]
+#     for i in input:
+#         scraper = WantedScraper(i)
+#         scraper.search()
+#         remote_scraper = RemoteScraper("remoteok", i)
+#         remote_scraper.search()
+#         remote_wework_scraper = RemoteScraper("weworkremotely", i)
+#         remote_wework_scraper.search()
+#         save_to_file(
+#             i,
+#             scraper.search_results
+#             + remote_scraper.search_result
+#             + remote_wework_scraper.search_result,
+#         )

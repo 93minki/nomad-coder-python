@@ -1,0 +1,21 @@
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Job Scraper</title>
+  </head>
+  <body>
+    <h1>Search Results:</h1>
+    <ul>
+      {% for result in search_results %}
+      <li>{{ result.title }}</li>
+      <li>{{ result.company }}</li>
+      <li>{{ result.location }}</li>
+      <li>{{ result.salary }}</li>
+      <li>{{ result.description }}</li>
+      <li>{{ result.url }}</li>
+      {% endfor %}
+    </ul>
+  </body>
+</html>
