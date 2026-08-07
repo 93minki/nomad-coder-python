@@ -1,6 +1,7 @@
 from flask import Flask, redirect, render_template, request, send_file
 
 from file import save_to_file
+from remote_scraper import RemoteScraper
 from wanted_scraper import WantedScraper
 
 app = Flask("JobScraper")
@@ -16,21 +17,38 @@ def home():
 @app.route("/search")
 def search():
     keyword = request.args.get("keyword")
+    site = request.args.getlist("site")
+    searching_range = request.args.get("searching_range")
 
     if not keyword:
         return redirect("/")
 
     if keyword in db:
-        jobs = db[keyword]
+        results = db[keyword]
     else:
-        wanted_scraper = WantedScraper(keyword)
-        wanted_scraper.search()
-        jobs = wanted_scraper.search_results
-        db[keyword] = jobs
+        results = []
+
+        if "wanted" in site:
+            wanted_scraper = WantedScraper(keyword)
+            wanted_scraper.search()
+            print("wanted", wanted_scraper.search_results)
+            results.extend(wanted_scraper.search_results)
+        if "remoteok" in site:
+            remote_scraper = RemoteScraper("remoteok", keyword)
+            remote_scraper.search()
+            print("remoteok", remote_scraper.search_result)
+            results.extend(remote_scraper.search_result)
+        if "weworkremotely" in site:
+            remote_wework_scraper = RemoteScraper("weworkremotely", keyword)
+            remote_wework_scraper.search()
+            print("weworkremotely", remote_wework_scraper.search_result)
+            results.extend(remote_wework_scraper.search_result)
+
+        db[keyword] = results
 
     return render_template(
         "search.html",
-        search_results=jobs,
+        search_results=results,
         keyword=keyword,
     )
 

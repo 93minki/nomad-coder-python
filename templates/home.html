@@ -9,11 +9,51 @@
       href="https://cdn.jsdelivr.net/npm/@picocss/pico@2/css/pico.min.css"
     />
   </head>
+  <style></style>
   <body>
     <main class="container">
       <h1>Job Scraper</h1>
       <h4>What job do you want?</h4>
+
       <form action="/search">
+        <fieldset>
+          <legend>Recruting Site</legend>
+          <input
+            type="checkbox"
+            id="wanted"
+            name="site"
+            value="wanted"
+            checked
+          />
+          <label for="wanted">Wanted</label>
+          <input type="checkbox" id="remoteok" name="site" value="remoteok" />
+          <label for="remoteok">RemoteOK</label>
+          <input
+            type="checkbox"
+            id="weworkremotely"
+            name="site"
+            value="weworkremotely"
+          />
+          <label for="weworkremotely">WeWorkRemotely</label>
+        </fieldset>
+        <fieldset>
+          <legend>Searching range</legend>
+          <input
+            type="radio"
+            id="quick-search"
+            name="searching_range"
+            value="quick"
+            checked
+          />
+          <label for="quick-search">빠른 탐색(첫 페이지)</label>
+          <input
+            type="radio"
+            id="deep-search"
+            name="searching_range"
+            value="deep"
+          />
+          <label for="deep-search">깊은 탐색(모든 페이지)</label>
+        </fieldset>
         <input
           type="text"
           name="keyword"
