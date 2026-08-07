@@ -4,18 +4,49 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Job Scraper</title>
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/@picocss/pico@2/css/pico.min.css"
+    />
   </head>
   <body>
-    <h1>Search Results:</h1>
-    <ul>
-      {% for result in search_results %}
-      <li>{{ result.title }}</li>
-      <li>{{ result.company }}</li>
-      <li>{{ result.location }}</li>
-      <li>{{ result.salary }}</li>
-      <li>{{ result.description }}</li>
-      <li>{{ result.url }}</li>
-      {% endfor %}
-    </ul>
+    <main class="container">
+      <hgroup>
+        <h1>Search Results:</h1>
+        <a target="_blank" href="/export?keyword={{keyword}}">
+          Export to file
+        </a>
+      </hgroup>
+
+      <figure>
+        <table class="striped">
+          <thead>
+            <tr>
+              <th>Title</th>
+              <th>Company</th>
+              <th>Location</th>
+              <th>Tags</th>
+              <th>Experience</th>
+              <th>Reward</th>
+              <th>URL</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for result in search_results %}
+            <tr>
+              <td>{{ result.title }}</td>
+              <td>{{ result.company_name }}</td>
+              <td>{{ result.location }}</td>
+              <td>{{ result.tags }}</td>
+              <td>{{ result.experience }}</td>
+              <td>{{ result.reward }}</td>
+              <td>{{ result.url }}</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </figure>
+      <ul></ul>
+    </main>
   </body>
 </html>

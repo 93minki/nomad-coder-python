@@ -61,6 +61,7 @@ class WantedScraper:
 
                     link = f"https://www.wanted.co.kr{a['href']}"
                     company_name = a["data-company-name"]
+                    title = a["data-position-name"]
 
                     spans = [s.get_text(strip=True) for s in a.find_all("span")]
                     experience = next(
@@ -70,6 +71,7 @@ class WantedScraper:
 
                     self.search_results.append(
                         Job(
+                            title=title,
                             url=link,  # link → url
                             company_name=company_name,
                             experience=experience,
@@ -80,3 +82,9 @@ class WantedScraper:
             page.close()
             browser.close()
             playwright.stop()
+
+
+if __name__ == "__main__":
+    s = WantedScraper("apple")
+    s.search()
+    print(s.search_results)

@@ -1,8 +1,11 @@
-from flask import Flask, redirect, render_template, request
+from flask import Flask, redirect, render_template, request, send_file
 
+from file import save_to_file
 from wanted_scraper import WantedScraper
 
 app = Flask("JobScraper")
+
+db = {"python": []}
 
 
 @app.route("/")
@@ -13,16 +16,35 @@ def home():
 @app.route("/search")
 def search():
     keyword = request.args.get("keyword")
-    if keyword is None:
+
+    if not keyword:
         return redirect("/")
 
-    wanted_scraper = WantedScraper(keyword)
-    wanted_scraper.search()
+    if keyword in db:
+        jobs = db[keyword]
+    else:
+        wanted_scraper = WantedScraper(keyword)
+        wanted_scraper.search()
+        jobs = wanted_scraper.search_results
+        db[keyword] = jobs
 
     return render_template(
         "search.html",
-        search_results=wanted_scraper.search_results,
+        search_results=jobs,
+        keyword=keyword,
     )
+
+
+@app.route("/export")
+def export():
+    keyword = request.args.get("keyword")
+    if not keyword:
+        return redirect("/")
+    if keyword not in db:
+        return redirect(f"/search?keyword={keyword}")
+
+    save_to_file(keyword, db[keyword])
+    return send_file(f"{keyword}.csv", as_attachment=True)
 
 
 app.run(host="127.0.0.1", port=5001, debug=True)
